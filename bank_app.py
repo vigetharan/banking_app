@@ -75,7 +75,7 @@ def create_customer():
     with open('customers.txt','a') as file:
         file.write(f'{customer_id}::name:{name},Age:{age},Adress:{address},AccountNo:{account_no}\n')
     print('customer created successfully')
-    with open('usr.txt','a') as file:
+    with open('user.txt','a') as file:
         file.write(f'{customer_id}::{username}:{password}\n')
     try:
         amount=int(input(print('To open an account enter the amount for initial deposit:')))
@@ -85,7 +85,7 @@ def create_customer():
         pass
     account_no +=1
     customer_id +=1
-    with open('defaults1.txt','w') as file:
+    with open('defaults.txt','w') as file:
         file.write(f'{customer_id},{account_no}')
 
 def create_account():
@@ -94,13 +94,34 @@ def create_account():
 
 
 
-def withdrawal():
+def withdrawal(customer_id,account_no,amount):
     print('withdraw success')
-
-def check_balance(c_id):
-    print(f'account balance for{c_id} is')
+    a = getFileAsDic('accounts.txt')
+    if account_no in a.keys:
+        a[account_no]['balance'] += amount
+        new_balance = a[account_no]['balance']
+        writeDicToFile(a,'accounts.txt')
+        with open('transactions.txt','a') as file:
+            file.write(f'{datetime.today().replace(microsecond=0)}::cus_id:{customer_id},acc_no:{account_no},type:Withdrawal,amount:{amount},balance:{new_balance}\n')
+    else:
+        print("account number not found\nPlease Retry with a correct one")
+def check_balance(account_no):
+    a=getFileAsDic('accounts.txt')
+    if account_no in a:
+        balance = a[account_no]['balance']
+        print(f'account balance for{account_no} is : {balance}')
+    else:
+        print("account number not found\nPlease Retry with a correct one")
     
 def transaction_history(account_no):
+    a = getFileAsDic('transactions.txt')
+    # for key,value in a.items():
+    #     str = ""
+    #     for sub_key,Sub_value in value.items():
+    #         srt += (f'{}') 
+
+
+        
     print('transaction history of ')
 
 def getCustomerDetails(customer_id):
@@ -109,10 +130,10 @@ def getCustomerDetails(customer_id):
 def getAccountDetails(account_No):
     print('account details of ')
 
-def change_pw(c_id):
+def change_pw(c_id,username):
     new_pw = input(f"enter new password for {c_id}")
     a=getFileAsDic('usr.txt')
-    a[c_id]['admin'] = new_pw
+    a[c_id][username] = new_pw
     writeDicToFile(a,'usr.txt')
 
 
@@ -160,7 +181,7 @@ def main_menu():
     a=getFileAsDic('user.txt')
     for item in a.items():
         if username in item[1]:
-            c_id = item[0]               
+            customer_id = item[0]               
             if username=='admin' and password==item[1][username]:
                 print('login as admin successfully:')
                 while True:
@@ -178,20 +199,23 @@ def main_menu():
                     elif select ==6:
                         getAccountDetails()
                     elif select == 7:
-                        change_pw(c_id)
+                        change_pw(customer_id,username)
                     elif select == 8:
                         welcome()
                         #identify_login()
             elif password==item[1][username]:
                 print('Welcome as user!!!')
                 select = user_menu()
+                b = getFileAsDic('customers.txt')
+                account_no = b[customer_id]['AccountNo']
                 if select ==1:
-                    check_balance(c_id)
+                    check_balance(customer_id)
                     break
                 elif select ==2:
                     deposit()
                 elif select ==3:
-                    withdrawal()
+                    amount = float(input("Please Enter amount for withdraw : "))
+                    withdrawal(customer_id, acc_no, amount)
                 elif select ==4:
                     transaction_history()
                 elif select ==5:
@@ -200,7 +224,7 @@ def main_menu():
                     getAccountDetails()
                 elif select == 7:
                     print()
-                    change_pw(c_id)
+                    change_pw(customer_id,username)
                 elif select == 8:
                     break
             else:
