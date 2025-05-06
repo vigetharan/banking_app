@@ -131,10 +131,12 @@ def getAccountDetails(account_No):
     print('account details of ')
 
 def change_pw(c_id,username):
-    new_pw = input(f"enter new password for {c_id}")
-    a=getFileAsDic('usr.txt')
+    new_pw = input(f"Enter new password for username of({username}) :")
+    a=getFileAsDic('user.txt')
     a[c_id][username] = new_pw
-    writeDicToFile(a,'usr.txt')
+    writeDicToFile(a,'user.txt')
+    print('Password changed successfully.! Please login again :')
+    main_menu()
 
 
 
@@ -202,7 +204,9 @@ def main_menu():
                         change_pw(customer_id,username)
                     elif select == 8:
                         welcome()
-                        #identify_login()
+                        main_menu()
+                    elif select == 9:
+                        exit()
             elif password==item[1][username]:
                 print('Welcome as user!!!')
                 select = user_menu()
