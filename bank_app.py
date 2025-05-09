@@ -1,6 +1,7 @@
 #importing datetime for get date and time for transaction history
 from datetime import datetime
 
+import getpass
 #create a Text file as users.txt for keeping Default Username and password
 try:
     with open('users.txt','x') as file:
@@ -55,8 +56,8 @@ def get_amount(type):
         note = 'Enter the amount to Deposit : '
     while True:
         try:
-            amount = float(input(print(note)))
-            if amount>0: return f'{amount}'  
+            amount = float(input(note))
+            if amount>0: return amount  
             else:
                 print('The amount must be greater than zero...!')
                 continue
@@ -77,7 +78,7 @@ def get_acc_no_as_input():
             continue
 
 # function for Deposit
-def deposit(customer_id, deposit_type='Deposit'):
+def deposit(customer_id, deposit_type):
     date_time=datetime.today().replace(microsecond=0)
     if deposit_type == 'Initial_Deposit':
         with open('defaults.txt','r+') as file:
@@ -86,22 +87,25 @@ def deposit(customer_id, deposit_type='Deposit'):
         new_balance = amount = get_amount('Initial')
         with open('accounts.txt','a') as file:
             file.write(f'{account_no}::cus_id:{customer_id},balance:{amount}\n')
+        print(f"Initial deposit of {amount:,.2f} is depositted to your account successfully...!\nCurrent BALANCE is :{new_balance:,.2f} ")
     elif deposit_type == 'Deposit':
         customers = getFileAsDic('customers.txt')
-        account_no = customers[customer_id]['accountNo']
+        account_no = customers[customer_id]['Account_no']
         amount = get_amount('Deposit')
         accounts = getFileAsDic('accounts.txt')
         accounts[account_no]['balance'] = float(accounts[account_no]['balance']) + amount
+        new_balance =  accounts[account_no]['balance']
         writeDicToFile(accounts,'accounts.txt')
-    with open('transactions.txt','a') as file:
+        with open('transactions.txt','a') as file:
             file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:{deposit_type},amount:{amount},balance:{new_balance}\n')
+        print(f'Your deposit of {amount:,.2f} is depositted to your account successfully...!\nCurrent BALANCE is :{new_balance:,.2f} ')
 #function for ger customer information
 def get_customer():
     customer_details={}
     while True:
         name = input("Enter new Customer's name : ")
         if not name.isalpha():
-            print("name must be in letters only... please re enter")
+            print("NAME must be in letters only... please re enter")
             continue
         else:
             customer_details['Name']=name
@@ -131,15 +135,15 @@ def create_customer():
         customer_id = default[0]
         account_no =int(default[1])
     custome_details,username,password =get_customer()
-    toWriteDetails={customer_id:custome_details}
-    toWriteDetails[customer_id]['Account_no'] = account_no
-    writeDicToFile(toWriteDetails,'customers.txt')
+    writeTofile={customer_id:custome_details}
+    writeTofile[customer_id]['Account_no'] = account_no
+    writeDicToFile(writeTofile,'customers.txt')
     print(f'Customer with customer id:- {customer_id} created successfully....!!!\n')
     with open('users.txt','a') as file:
         file.write(f'{customer_id}::user:{username},pass:{password}\n')
         deposit(customer_id, 'Initial_Deposit')
-    print('Account opened successfully...!!!\n')
-#write to file upcoming account number and customer id for next creation
+    print('Account opened successfully...!!!\nInitial Deposit Done....!!!\n')
+#write to file next account number and customer id for next creation
     next_account_no = account_no +1
     num_partOf_customer_id = int(customer_id[1:])
     next_customer_id = (f'C{(num_partOf_customer_id + 1):04}')
@@ -150,16 +154,16 @@ def create_customer():
 def withdrawal(customer_id):
     date_time=datetime.today().replace(microsecond=0)
     customers = getFileAsDic('customers.txt')
-    account_no = customers[customer_id]['accountNo']
-    print('withdraw success')
+    account_no = customers[customer_id]['Account_no']
     amount = get_amount('Withdraw')
     accounts = getFileAsDic('accounts.txt')
-    if account_no in accounts.keys:
-        accounts[account_no]['balance'] += amount
+    if account_no in accounts:
+        accounts[account_no]['balance'] = float(accounts[account_no]['balance']) - amount
         new_balance = accounts[account_no]['balance']
         writeDicToFile(accounts,'accounts.txt')
         with open('transactions.txt','a') as file:
             file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:Withdrawal,amount:{amount},balance:{new_balance}\n')
+        print(f'Withdraw of {amount:,.2f} is succcessfull !!!\n')
     else:
         print("account number not found\nPlease Retry with a correct one")
 #fUNCTION FOR BALANCE CHECK
@@ -172,21 +176,21 @@ def check_balance(accountNo):
 #getting Account Transaction history   
 def get_transaction_history_by_acc_no(account_no):
     print(f"{'*'*36}\nTRANSACTION HISTORY OF {account_no}\n{'*'*36}")
-    print(f"date\t\t\ttype of transaction\t\tamount\t\tbalance\n{'='*50}")
+    print(f"{'date':<25}{'type of transaction':<25}{'amount':>20}{'balance':>20}\n{'='*50}")
     transactions=getFileAsDic('transactions.txt')
-    str=""
     for key,value in transactions.items():
-            if int(value['acc_no']) == account_no:
-                print(f'{key}\t{transactions[key]['type']},\t\t\t,{transactions[key]['amount']},\t\t,{transactions[key]['balance']}\n')
+            if int(value['acc_no']) == int(account_no):
+                print(f"{key:<25}{value['type']:<25}{float(value['amount']):>20,.2f}{float(value['balance']):>20,.2f}\n")
+
 
 def get_transaction_history_by_date(date):
-    print(f"TRANSACTION HISTORY OF {date}\n{'*'*25}")
-    print("Account No.\t\t\ttype of transaction\t\tamount\t\tbalance")
+    print(f"TRANSACTION HISTORY FOR {date}\n{'*'*25}")
+    print(f"{'Account No.':<15}{'type of transaction':<15}{'amount':>15}{'balance':>15}")
     transactions=getFileAsDic('transactions.txt')
     str =""
     for key in transactions:
         if key.startswith(date):
-            str += (f'{transactions[key]['acc_no']}\t\t\t{transactions[key]['amount']}\t\t{transactions[key]['balance']}\n')
+            str += (f"{transactions[key]['acc_no']:<15}{transactions[key]['type']:<15}{transactions[key]['amount']:,.2f:>15}{transactions[key]['balance']:,.2f:>15}\n")
         print(f'{key}\t{str}')
 
 
@@ -238,21 +242,29 @@ def user_menu():
         print('6. Logout.')
         print('7. Exit.')
         try:
-            choice=int(input('As a admin please chose a choice'))
+            choice=int(input('As a user please chose a choice'))
             if choice in [1,2,3,4,5,6]:
                 return choice
             elif choice ==7:
-                    exit()
+                exit()
             else:
                 print('invalid choice....!\nPlease choose a correct one between 1-9')
                 continue
         except ValueError:
             print('Invalid input please enter a valid number between 1-9')
             continue
+
+
+def get_acc_no(customer_id):
+    customers=getFileAsDic('customers.txt')
+    account_num = customers[customer_id]['Account_no']
+    return int(account_num)
+
 # Main menu for execution of main program.
 def main_menu():
     username=input('Enter your username : ').strip()
-    password=input('Enter your password  : ').strip()
+    password=getpass.getpass('Enter your password  : ').strip()
+    print("PASSWORD Entered......!")
     users=getFileAsDic('users.txt')
     for key in users:
         if username == users[key]['user']:
@@ -262,7 +274,7 @@ def main_menu():
                 while True:
                     select = admin_menu()
                     if select ==1:      create_customer()
-                    elif select ==2:    create_account(customer_id)
+                    elif select ==2:    deposit(customer_id,'Deposit')
                     elif select ==3:    get_transaction_history_by_date(input('Enter date for get transaction history : '))
                     elif select ==4:    get_transaction_history_by_acc_no(get_acc_no_as_input())
                     elif select ==5:    check_balance(get_acc_no_as_input())
@@ -272,22 +284,18 @@ def main_menu():
                     elif select ==9:    exit()
             elif password==users[key]['pass']:
                 print('Welcome as user!!!')
-                select = user_menu()
-                if select ==1:
-                    check_balance()
-                    break
-                elif select ==2:
-                    deposit(customer_id, 'Deposit')
-                elif select ==3:
-                    withdrawal(customer_id)
-                elif select ==4:
-                    get_transaction_history()
-                elif select ==5:
-                    print()
-                    change_pw(customer_id,username)
-                elif select ==6:
-                    main_menu()
-                    break
+                while True:
+                    select = user_menu()
+                    if select ==1:      check_balance()
+                    elif select ==2:    deposit(customer_id, 'Deposit')
+                    elif select ==3:    withdrawal(customer_id)
+                    elif select ==4:    get_transaction_history_by_acc_no(get_acc_no(customer_id))
+                    elif select ==5:
+                        print()
+                        change_pw(customer_id,username)
+                    elif select ==6:
+                        main_menu()
+                        break
             else:
                 print('Password is incorrect.! Please retry...!')
     else:
