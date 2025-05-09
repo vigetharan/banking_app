@@ -54,25 +54,27 @@ def get_amount(type):
         note = 'Enter the amount to Withdraw : '
     elif type == 'Deposit':
         note = 'Enter the amount to Deposit : '
+    elif type == "Transfer":
+        note = 'Enter the amount for Transfer : '
     while True:
         try:
             amount = float(input(note))
-            if amount>0: return amount  
+            if amount>0: return amount
             else:
                 print('The amount must be greater than zero...!')
                 continue
         except ValueError:
             print("Amount must be in digits only")
-
+#check account number available in accounts details
 def get_acc_no_as_input():
     accounts=getFileAsDic('accounts.txt')
     while True:
         try:
-            acc_num = input("Please Enter account number for get balance : ")
+            acc_num = input("Please Enter account number : ")
             for key in accounts:
                 if key == acc_num:
                     return acc_num
-            print('Account number not available\nContact bank for get an account number...\n')
+            print('Account number not available\nEnter the correct one OR Contact bank for create an account...\n')
         except ValueError:
             print('Account number must be numbers and contains only 6 Digits.\n')
             continue
@@ -108,7 +110,6 @@ def get_customer():
             print("NAME must be in letters only... please re enter")
             continue
         else:
-            customer_details['Name']=name
             break
     while True:
         try:
@@ -117,16 +118,14 @@ def get_customer():
                 print('Age must between 18 t0 100...\nPlease ReEnter age.')
                 continue
             else:
-                customer_details['Age']=age
                 break
         except ValueError: 
             print('age must be a number...!\n Please ReEnter Correct age')
         continue
     address = input("Enter new Customer's address : ")
-    customer_details['Address'] = address
     username = input("Enter new Customer's username : ")
     password = input(f"Enter password for username of {username}: ")
-    return customer_details, username, password
+    return name, age, address, username, password
 
 # function for create a customer
 def create_customer():
@@ -134,10 +133,9 @@ def create_customer():
         default=file.readline().split(',')
         customer_id = default[0]
         account_no =int(default[1])
-    custome_details,username,password =get_customer()
-    writeTofile={customer_id:custome_details}
-    writeTofile[customer_id]['Account_no'] = account_no
-    writeDicToFile(writeTofile,'customers.txt')
+    name, age, address, username, password =get_customer()
+    with open('customers.txt','a') as file:
+        file.write(f"{customer_id}::Name:{name},Age:{age},Address:{address},Account_no:{account_no}\n")
     print(f'Customer with customer id:- {customer_id} created successfully....!!!\n')
     with open('users.txt','a') as file:
         file.write(f'{customer_id}::user:{username},pass:{password}\n')
@@ -152,26 +150,29 @@ def create_customer():
 
 #FUNCTION FOR WITHDRAWAL
 def withdrawal(customer_id):
+    accounts = getFileAsDic('accounts.txt')
     date_time=datetime.today().replace(microsecond=0)
     customers = getFileAsDic('customers.txt')
     account_no = customers[customer_id]['Account_no']
-    amount = get_amount('Withdraw')
-    accounts = getFileAsDic('accounts.txt')
-    if account_no in accounts:
-        accounts[account_no]['balance'] = float(accounts[account_no]['balance']) - amount
-        new_balance = accounts[account_no]['balance']
-        writeDicToFile(accounts,'accounts.txt')
-        with open('transactions.txt','a') as file:
-            file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:Withdrawal,amount:{amount},balance:{new_balance}\n')
-        print(f'Withdraw of {amount:,.2f} is succcessfull !!!\n')
-    else:
-        print("account number not found\nPlease Retry with a correct one")
+    while True:
+        amount = get_amount('Withdraw')
+        if amount > float(accounts[account_no]['balance']):
+            print('Amount must be lower than account balance...\nPlease re-Try..\n')
+            continue
+        else: break
+    accounts[account_no]['balance'] = float(accounts[account_no]['balance']) - amount
+    new_balance = accounts[account_no]['balance']
+    writeDicToFile(accounts,'accounts.txt')
+    with open('transactions.txt','a') as file:
+        file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:Withdrawal,amount:{amount},balance:{new_balance}\n')
+    print(f'Withdraw of {amount:,.2f} from your account is succcessful !!!\n')
+
 #fUNCTION FOR BALANCE CHECK
 def check_balance(accountNo):
-    a=getFileAsDic('accounts.txt')
-    for key in a:
-        if key == accountNo:
-            balance = float(a[key]['balance'])
+    accounts=getFileAsDic('accounts.txt')
+    for key in accounts:
+        if int(key) == accountNo:
+            balance = float(accounts[key]['balance'])
     print(f'Current Account balance of {accountNo} is : {balance:,.2f}')
 #getting Account Transaction history   
 def get_transaction_history_by_acc_no(account_no):
@@ -193,6 +194,36 @@ def get_transaction_history_by_date(date):
             str += (f"{transactions[key]['acc_no']:<15}{transactions[key]['type']:<15}{transactions[key]['amount']:,.2f:>15}{transactions[key]['balance']:,.2f:>15}\n")
         print(f'{key}\t{str}')
 
+def transfer_between_accounts(customer_id):
+    date_time=datetime.today().replace(microsecond=0)
+    accounts = getFileAsDic('accounts.txt')
+    customers = getFileAsDic('customers.txt')
+    print("Transfer Money to another account\n")
+    to_Acc = get_acc_no_as_input()
+    print("To Transfer Money to another account\n")
+    amount = float(input("Enter amount for transfer : "))
+    account_no = customers[customer_id]['Account_no']
+    while True:
+        amount = get_amount('Withdraw')
+        if amount > float(accounts[account_no]['balance']):
+            print('Amount must be lower than account balance...\nPlease re-Try..\n')
+            continue
+        else: break
+    if account_no in accounts:
+        accounts[account_no]['balance'] = float(accounts[account_no]['balance']) - amount
+        new_balance = accounts[account_no]['balance']
+        writeDicToFile(accounts,'accounts.txt')
+        with open('transactions.txt','a') as file:
+            file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:Withdrawal,amount:{amount},balance:{new_balance}\n')
+        print(f'Withdraw of {amount:,.2f} from your account is succcessful !!!\n')
+
+
+    
+    accounts[to_Acc]['balance'] = float(accounts[to_Acc]['balance']) + amount
+    new_balance =  accounts[to_Acc]['balance']
+    writeDicToFile(accounts,'accounts.txt')
+    with open('transactions.txt','a') as file:
+        file.write(f'{date_time}::cus_id:{customer_id},acc_no:{to_Acc},type:Transfer,amount:{amount},balance:{new_balance}\n')
 
 def change_pw(c_id,username):
     users=getFileAsDic('users.txt')
@@ -234,18 +265,19 @@ def admin_menu():
 def user_menu():
    while True:
         print('WELCOME TO ABCD BANK as an USER...!!!!')
-        print('1. Check Balance of an account/')
+        print('1. Check Balance of an account')
         print('2. Deposit to your account.')
         print('3. Withdrawal from your account.')
-        print('4. Transaction History of your account.')
-        print('5. change your login password.')
-        print('6. Logout.')
-        print('7. Exit.')
+        print('4. To Transfer money to Another Account.')
+        print('5. Transaction History of your account.')
+        print('6. change your login password.')
+        print('7. Logout.')
+        print('8. Exit.')
         try:
             choice=int(input('As a user please chose a choice'))
-            if choice in [1,2,3,4,5,6]:
+            if choice in [1,2,3,4,5,6,7]:
                 return choice
-            elif choice ==7:
+            elif choice ==8:
                 exit()
             else:
                 print('invalid choice....!\nPlease choose a correct one between 1-9')
@@ -286,14 +318,13 @@ def main_menu():
                 print('Welcome as user!!!')
                 while True:
                     select = user_menu()
-                    if select ==1:      check_balance()
+                    if select ==1:      check_balance(int(get_acc_no(customer_id)))
                     elif select ==2:    deposit(customer_id, 'Deposit')
                     elif select ==3:    withdrawal(customer_id)
-                    elif select ==4:    get_transaction_history_by_acc_no(get_acc_no(customer_id))
-                    elif select ==5:
-                        print()
-                        change_pw(customer_id,username)
-                    elif select ==6:
+                    elif select ==4:    transfer_between_accounts(customer_id)
+                    elif select ==5:    get_transaction_history_by_acc_no(get_acc_no(customer_id))
+                    elif select ==6:    change_pw(customer_id,username)
+                    elif select ==7:
                         main_menu()
                         break
             else:
