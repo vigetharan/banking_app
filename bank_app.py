@@ -8,7 +8,7 @@ try:
 except FileExistsError:
     pass
 
-#create a Text file as defaults.txt for keeping upcoming Customer Id and Account Number
+#create a Text file as defaults.txt for keeping upcoming Customer Id and Account Number.......
 try:
     with open('defaults.txt','x') as file:
         file.write('C0001,100001')
