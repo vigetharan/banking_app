@@ -1,6 +1,6 @@
 #create a Text file as user.txt for keeping Default Username and password
 try:
-    with open('user.txt','x') as file:
+    with open('users.txt','x') as file:
         file.write('Admin::user:admin,pass:1234\n')
 except FileExistsError:
     pass
@@ -121,8 +121,6 @@ def create_customer():
     toWriteDetails[customer_id]['Account_no'] = account_no
     writeDicToFile(toWriteDetails,'customers.txt')
 
-    # with open('customers.txt','a') as file:
-    #     file.write(f'{customer_id}::name:{name},Age:{age},Adress:{address},AccountNo:{account_no}\n')
     print(f'Customer with customer id:- {customer_id} created successfully')
     with open('users.txt','a') as file:
         file.write(f'{customer_id}::user:{username},pass{password}\n')
@@ -150,7 +148,6 @@ def withdrawal(customer_id):
             file.write(f'{datetime.today().replace(microsecond=0)}::cus_id:{customer_id},acc_no:{account_no},type:Withdrawal,amount:{amount},balance:{new_balance}\n')
     else:
         print("account number not found\nPlease Retry with a correct one")
-
 #fUNCTION FOR BALANCE CHECK
 def check_balance(accountNo):
     a=getFileAsDic('accounts.txt')
@@ -158,7 +155,7 @@ def check_balance(accountNo):
         if key == accountNo:
             balance = float(a[key]['balance'])
     print(f'Current Account balance of {accountNo} is : {balance:,.2f}')
-    
+#getting Account Transaction history   
 def get_transaction_history(account_no):
     print(f"TRANSACTION HISTORY OF {account_no}\n{'*'*25}")
     print("date\t\t\ttype of transaction\t\tamount\t\tbalance")
@@ -181,11 +178,10 @@ def change_pw(c_id,username):
     print('Password changed successfully.!\nPlease login again :')
     main_menu()             #after password change, call main_menu() for relogin
 
-
-
 #MENU FOR PROCESS AS ADMIN, if admin logged in successful.
 def admin_menu():
     while True:
+        print('WELCOME TO ABCD BANK as an ADMIN...!!!!')
         print('1. create a customer')
         print('2. create an account')
         print("3. view a customer's details")
