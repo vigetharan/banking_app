@@ -171,7 +171,7 @@ def withdrawal(customer_id):
 def check_balance(accountNo):
     accounts=getFileAsDic('accounts.txt')
     for key in accounts:
-        if int(key) == accountNo:
+        if int(key) == int(accountNo):
             balance = float(accounts[key]['balance'])
     print(f'Current Account balance of {accountNo} is : {balance:,.2f}')
 #getting Account Transaction history   
@@ -180,20 +180,19 @@ def get_transaction_history_by_acc_no(account_no):
     print(f"{'date':<25}{'type of transaction':<25}{'amount':>20}{'balance':>20}\n{'='*50}")
     transactions=getFileAsDic('transactions.txt')
     for key,value in transactions.items():
-            if int(value['acc_no']) == int(account_no):
-                print(f"{key:<25}{value['type']:<25}{float(value['amount']):>20,.2f}{float(value['balance']):>20,.2f}\n")
+        if str(value['acc_no']) == str(account_no):
+            print(f"{key:<25}{value['type']:<25}{float(value['amount']):>20,.2f}{float(value['balance']):>20,.2f}\n")
 
 
 def get_transaction_history_by_date(date):
-    print(f"TRANSACTION HISTORY FOR {date}\n{'*'*25}")
-    print(f"{'Account No.':<15}{'type of transaction':<15}{'amount':>15}{'balance':>15}")
+    print(f"TRANSACTION HISTORY FOR {date}\n{'*'*36}")
+    print(f"{'Account No.':<15}{'type of transaction':<25}{'amount':>20}{'balance':>20}")
     transactions=getFileAsDic('transactions.txt')
     str =""
     for key in transactions:
         if key.startswith(date):
-            str += (f"{transactions[key]['acc_no']:<15}{transactions[key]['type']:<15}{transactions[key]['amount']:,.2f:>15}{transactions[key]['balance']:,.2f:>15}\n")
-        print(f'{key}\t{str}')
-
+            print(f"{transactions[key]['acc_no']:<15}{transactions[key]['type']:<25}{float(transactions[key]['amount']):>20,.2f}{float(transactions[key]['balance']):>20,.2f}\n")
+get_transaction_history_by_date('2025-05-10')
 def transfer_between_accounts(customer_id):
     date_time=datetime.today().replace(microsecond=0)
     accounts = getFileAsDic('accounts.txt')
@@ -201,10 +200,9 @@ def transfer_between_accounts(customer_id):
     print("Transfer Money to another account\n")
     to_Acc = get_acc_no_as_input()
     print("To Transfer Money to another account\n")
-    amount = float(input("Enter amount for transfer : "))
     account_no = customers[customer_id]['Account_no']
     while True:
-        amount = get_amount('Withdraw')
+        amount = get_amount("Transfer")
         if amount > float(accounts[account_no]['balance']):
             print('Amount must be lower than account balance...\nPlease re-Try..\n')
             continue
@@ -214,16 +212,17 @@ def transfer_between_accounts(customer_id):
         new_balance = accounts[account_no]['balance']
         writeDicToFile(accounts,'accounts.txt')
         with open('transactions.txt','a') as file:
-            file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:Withdrawal,amount:{amount},balance:{new_balance}\n')
-        print(f'Withdraw of {amount:,.2f} from your account is succcessful !!!\n')
+            file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:Transfer Debit,amount:{amount},balance:{new_balance}\n')
+        print(f'Transfer of {amount:,.2f} from your account is succcessful !!!\n')
 
 
     
     accounts[to_Acc]['balance'] = float(accounts[to_Acc]['balance']) + amount
     new_balance =  accounts[to_Acc]['balance']
     writeDicToFile(accounts,'accounts.txt')
+    date_time1=datetime.today().replace(microsecond=0)
     with open('transactions.txt','a') as file:
-        file.write(f'{date_time}::cus_id:{customer_id},acc_no:{to_Acc},type:Transfer,amount:{amount},balance:{new_balance}\n')
+        file.write(f'{date_time1}::cus_id:{customer_id},acc_no:{to_Acc},type:Transfer credit,amount:{amount},balance:{new_balance}\n')
 
 def change_pw(c_id,username):
     users=getFileAsDic('users.txt')
@@ -295,14 +294,14 @@ def get_acc_no(customer_id):
 # Main menu for execution of main program.
 def main_menu():
     username=input('Enter your username : ').strip()
-    password=getpass.getpass('Enter your password  : ').strip()
+    password=getpass.getpass('Password you typing is hiden, please enter password and HIT ENTER KEY!!!\nEnter your password  : ').strip()
     print("PASSWORD Entered......!")
     users=getFileAsDic('users.txt')
     for key in users:
         if username == users[key]['user']:
             customer_id = key               
             if username=='admin' and password == users[key]['pass']:
-                print('login as admin successfully:')
+                print('logged in as admin successfully.....!!!!')
                 while True:
                     select = admin_menu()
                     if select ==1:      create_customer()
@@ -315,7 +314,7 @@ def main_menu():
                     elif select ==8:    main_menu()
                     elif select ==9:    exit()
             elif password==users[key]['pass']:
-                print('Welcome as user!!!')
+                print('logged in as admin successfully....!!!!')
                 while True:
                     select = user_menu()
                     if select ==1:      check_balance(int(get_acc_no(customer_id)))
@@ -329,6 +328,7 @@ def main_menu():
                         break
             else:
                 print('Password is incorrect.! Please retry...!')
+                main_menu()
     else:
         print('Access Denied...!\nUsername not exists...\n Contact admin for register username and password!')
 
