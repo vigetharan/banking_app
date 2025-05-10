@@ -91,16 +91,22 @@ def deposit(customer_id, deposit_type):
             file.write(f'{account_no}::cus_id:{customer_id},balance:{amount}\n')
         print(f"Initial deposit of {amount:,.2f} is depositted to your account successfully...!\nCurrent BALANCE is :{new_balance:,.2f} ")
     elif deposit_type == 'Deposit':
-        customers = getFileAsDic('customers.txt')
-        account_no = customers[customer_id]['Account_no']
-        amount = get_amount('Deposit')
-        accounts = getFileAsDic('accounts.txt')
-        accounts[account_no]['balance'] = float(accounts[account_no]['balance']) + amount
-        new_balance =  accounts[account_no]['balance']
-        writeDicToFile(accounts,'accounts.txt')
-        with open('transactions.txt','a') as file:
-            file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:{deposit_type},amount:{amount},balance:{new_balance}\n')
-        print(f'Your deposit of {amount:,.2f} is depositted to your account successfully...!\nCurrent BALANCE is :{new_balance:,.2f} ')
+        try:
+            customers = getFileAsDic('customers.txt')
+            account_no = customers[customer_id]['Account_no']
+            amount = get_amount('Deposit')
+            accounts = getFileAsDic('accounts.txt')
+            accounts[account_no]['balance'] = float(accounts[account_no]['balance']) + amount
+            new_balance =  accounts[account_no]['balance']
+            writeDicToFile(accounts,'accounts.txt')
+        except KeyError:
+            print("Sorry 😒 Deposit was not successful...!")
+            pass
+    with open('transactions.txt','a') as file:
+        file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:{deposit_type},amount:{amount},balance:{new_balance}\n')
+        print(f'Your {deposit_type} of {amount:,.2f} is depositted to your account successfully...!\nCurrent BALANCE is :{new_balance:,.2f} ')
+
+        
 #function for ger customer information
 def get_customer():
     customer_details={}
@@ -185,14 +191,16 @@ def get_transaction_history_by_acc_no(account_no):
 
 
 def get_transaction_history_by_date(date):
-    print(f"TRANSACTION HISTORY FOR {date}\n{'*'*36}")
+    print(f"TRANSACTION HISTORY FOR {date}\n{'*'*81}")
     print(f"{'Account No.':<15}{'type of transaction':<25}{'amount':>20}{'balance':>20}")
     transactions=getFileAsDic('transactions.txt')
-    str =""
+    found = True
     for key in transactions:
         if key.startswith(date):
             print(f"{transactions[key]['acc_no']:<15}{transactions[key]['type']:<25}{float(transactions[key]['amount']):>20,.2f}{float(transactions[key]['balance']):>20,.2f}\n")
-get_transaction_history_by_date('2025-05-10')
+    # if not found:
+    #     print("No transactions found in given date.\n")
+#function for inter bank account transfers
 def transfer_between_accounts(customer_id):
     date_time=datetime.today().replace(microsecond=0)
     accounts = getFileAsDic('accounts.txt')
@@ -214,9 +222,6 @@ def transfer_between_accounts(customer_id):
         with open('transactions.txt','a') as file:
             file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:Transfer Debit,amount:{amount},balance:{new_balance}\n')
         print(f'Transfer of {amount:,.2f} from your account is succcessful !!!\n')
-
-
-    
     accounts[to_Acc]['balance'] = float(accounts[to_Acc]['balance']) + amount
     new_balance =  accounts[to_Acc]['balance']
     writeDicToFile(accounts,'accounts.txt')
@@ -238,40 +243,41 @@ def change_pw(c_id,username):
 #MENU FOR PROCESS AS ADMIN, if admin logged in successful.
 def admin_menu():
     while True:
-        print('WELCOME TO ABCD BANK as an ADMIN...!!!!')
-        print('1. create a customer')
-        print('2. create an account')
-        print("3. view a customer's details")
-        print('4. check transaction history of a account')
-        print("5. view an account's balance")
-        print("6. change admin's password")
-        print("7. change a user's password")
-        print('8. Logout')
-        print('9. Exit')
+        print(f"WELCOME TO ABCD BANK as an ADMIN...!!!!\n{'=-'*63}")
+        print('\t\t1. create a customer')
+        print('\t\t2. Deposit to an account')
+        print("\t\t3. view a customer's details")
+        print('\t\t4. check transaction history of a account')
+        print('\t\t5. check transaction history by a date.')
+        print("\t\t6. view an account's balance")
+        print("\t\t7. change admin's password")
+        print("\t\t8. change a user's password")
+        print('\t\t9. Logout')
+        print('\t\t0. Exit\n')
         try:
             choice=int(input('As a admin please chose a choice'))
-            if choice in [1,2,3,4,5,6,7,8]:
+            if choice in [1,2,3,4,5,6,7,8,9]:
                 return choice
-            elif choice ==9:
+            elif choice ==0:
                 exit()
             else:
                 print('invalid choice....!\nPlease choose a correct one between 1-9')
                 continue
         except ValueError:
-            print('Invalid input please enter a valid number between 1-9')
+            print('Invalid input please enter a valid number between 1-9\n')
             continue
 #MENU FOR PROCESS AS USER, if user logged in successful.
 def user_menu():
    while True:
-        print('WELCOME TO ABCD BANK as an USER...!!!!')
-        print('1. Check Balance of an account')
-        print('2. Deposit to your account.')
-        print('3. Withdrawal from your account.')
-        print('4. To Transfer money to Another Account.')
-        print('5. Transaction History of your account.')
-        print('6. change your login password.')
-        print('7. Logout.')
-        print('8. Exit.')
+        print(f"WELCOME TO ABCD BANK AS AN USER...!!!!\n{'=-'*63}")
+        print('\t\t1. Check Balance of an account')
+        print('\t\t2. Deposit to your account.')
+        print('\t\t3. Withdrawal from your account.')
+        print('\t\t4. To Transfer money to Another Account.')
+        print('\t\t5. Transaction History of your account.')
+        print('\t\t6. change your login password.')
+        print('\t\t7. Logout.')
+        print('\t\t8. Exit.\n')
         try:
             choice=int(input('As a user please chose a choice'))
             if choice in [1,2,3,4,5,6,7]:
@@ -284,8 +290,7 @@ def user_menu():
         except ValueError:
             print('Invalid input please enter a valid number between 1-9')
             continue
-
-
+#function for get account no from user
 def get_acc_no(customer_id):
     customers=getFileAsDic('customers.txt')
     account_num = customers[customer_id]['Account_no']
@@ -294,8 +299,8 @@ def get_acc_no(customer_id):
 # Main menu for execution of main program.
 def main_menu():
     username=input('Enter your username : ').strip()
-    password=getpass.getpass('Password you typing is hiden, please enter password and HIT ENTER KEY!!!\nEnter your password  : ').strip()
-    print("PASSWORD Entered......!")
+    password=getpass.getpass('Password, you typing is not display, please type password and HIT ENTER KEY!!!\nEnter your password  : ').strip()
+    print("PASSWORD Entered......!\n")
     users=getFileAsDic('users.txt')
     for key in users:
         if username == users[key]['user']:
@@ -305,14 +310,14 @@ def main_menu():
                 while True:
                     select = admin_menu()
                     if select ==1:      create_customer()
-                    elif select ==2:    deposit(customer_id,'Deposit')
-                    elif select ==3:    get_transaction_history_by_date(input('Enter date for get transaction history : '))
+                    elif select ==2:    deposit(input("Enter Customer's ID for Details : "), "Deposit")
+                    elif select ==3:    view_customer_details(input("Enter Customer's ID for Details : " ))
                     elif select ==4:    get_transaction_history_by_acc_no(get_acc_no_as_input())
-                    elif select ==5:    check_balance(get_acc_no_as_input())
-                    elif select ==6:    change_pw(customer_id,username)
-                    elif select ==7:    change_pw(input("Enter the USER's Customer ID for change password : "))
-                    elif select ==8:    main_menu()
-                    elif select ==9:    exit()
+                    elif select ==5:    get_transaction_history_by_date(input("Please Enter date for transaction history as YYYY-MM-DD"))
+                    elif select ==6:    check_balance(get_acc_no_as_input())
+                    elif select ==7:    change_pw(customer_id,username)
+                    elif select ==8:    change_pw(input("Enter the USER's Customer ID for change password : "))
+                    elif select ==9:    main_menu()
             elif password==users[key]['pass']:
                 print('logged in as admin successfully....!!!!')
                 while True:
