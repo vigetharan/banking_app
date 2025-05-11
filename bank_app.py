@@ -165,7 +165,7 @@ def get_customer():                                 #function for ger customer i
     dob = f'{nic_details[3]}-{nic_details[4]}-{nic_details[5]}'
     address = input(f"{"Enter new Customer's address":<40}:")
     username = input(f"{"Enter new Customer's username ":<40}:")
-    password = input(f"{'Enter password for username of {username}':<40}:")
+    password = input(f"Enter password for username of {username:<40}:")
     customer_details =[name, address, nic_no, age, sex, dob, username, password]
     return customer_details
 
@@ -225,8 +225,9 @@ def get_transaction_history_by_acc_no(account_no):
     for key,value in transactions.items():
         if str(value['acc_no']) == str(account_no):
             order_no +=1
-            print(f"{key:<25}{value['type']:<25}{float(value['amount']):>20,.2f}{float(value['balance']):>20,.2f}\n")
-        else:   print("No transactions found for given sccount number.\n")
+            print(f"{order_no:<5}{key:<25}{value['type']:<25}{float(value['amount']):>20,.2f}{float(value['balance']):>20,.2f}\n")
+    if order_no == 0:
+        print("No transactions found for given sccount number.\n")
 
 #getting transaction history for given date
 def get_transaction_history_by_date(date):
@@ -293,51 +294,51 @@ def view_customer_details(c_id):
             break  
         except KeyError:
             print("\tCUSTOMER ID is not valid\n\tPlease Enter as format of (C****) \n")
-            if input("type 'exit' for out from system....").strip().lower() == 'exit':
+            if input("type 'exit' for out from system.... OR Press ENTER for continue. : ").strip().lower() == 'exit':
                 exit()
             else:
                 c_id = input("Enter customer id for get details : ")
 
 #MENU FOR PROCESS AS ADMIN, if admin logged in successful.
 def admin_menu():
+    print(f"\t\t\tWELCOME TO ABCD BANK as an ADMIN...!!!!\n{'=-'*63}")
     while True:
-        print(f"\tWELCOME TO ABCD BANK as an ADMIN...!!!!\n{'=-'*63}")
-        print('\t\t1. create a customer')
-        print('\t\t2. Deposit to an account')
-        print("\t\t3. view a customer's details")
-        print('\t\t4. check transaction history of a account')
-        print('\t\t5. check transaction history by a date.')
-        print("\t\t6. view an account's balance")
-        print("\t\t7. change admin's password")
-        print("\t\t8. change a user's password")
-        print('\t\t9. Logout')
-        print('\t\t0. Exit\n')
+        print('\t1. create a customer')
+        print('\t2. Deposit to an account')
+        print("\t3. view a customer's details")
+        print('\t4. check transaction history of a account')
+        print('\t5. check transaction history by a date.')
+        print("\t6. view an account's balance")
+        print("\t7. change admin's password")
+        print("\t8. change a user's password")
+        print('\t9. Logout')
+        print('\t0. Exit\n')
         try:
-            choice=int(input('As a admin please chose a choice'))
+            choice=int(input('As a admin please chose a choice : '))
             if choice in [1,2,3,4,5,6,7,8,9]:
                 return choice
             elif choice ==0:
                 exit()
             else:
-                print('invalid choice....!\nPlease choose a correct one between 1-9')
+                print('invalid choice....!\nPlease choose a correct one between 1-9\n')
                 continue
         except ValueError:
             print('Invalid input please enter a valid number between 1-9\n')
             continue
 #MENU FOR PROCESS AS USER, if user logged in successful.
 def user_menu():
-   while True:
-        print(f"\tWELCOME TO ABCD BANK AS AN USER...!!!!\n{'=-'*63}")
-        print('\t\t1. Check Balance of an account')
-        print('\t\t2. Deposit to your account.')
-        print('\t\t3. Withdrawal from your account.')
-        print('\t\t4. To Transfer money to Another Account.')
-        print('\t\t5. Transaction History of your account.')
-        print('\t\t6. change your login password.')
-        print('\t\t7. Logout.')
-        print('\t\t8. Exit.\n')
+    print(f"\t\t\tWELCOME TO ABCD BANK AS AN USER...!!!!\n{'=-'*63}")
+    while True:
+        print('\t1. Check Balance of an account')
+        print('\t2. Deposit to your account.')
+        print('\t3. Withdrawal from your account.')
+        print('\t4. To Transfer money to Another Account.')
+        print('\t5. Transaction History of your account.')
+        print('\t6. change your login password.')
+        print('\t7. Logout.')
+        print('\t8. Exit.\n')
         try:
-            choice=int(input('As a user please chose a choice'))
+            choice=int(input('As a user please chose a choice : '))
             if choice in [1,2,3,4,5,6,7]:
                 return choice
             elif choice ==8:
@@ -351,15 +352,16 @@ def user_menu():
 
 # Main menu for execution of main program.
 def main_menu():
-    username=input('Enter your username : ').strip()
-    password=getpass.getpass('Password, you typing is not display, please type password and HIT ENTER KEY!!!\nEnter your password  : ').strip()
+    welcome()
+    username=input('\tEnter your username : ').strip()
+    password=getpass.getpass('Password, you typing is not VISIBLE, please type correct password and HIT ENTER KEY!!!\n\tEnter your password  : ').strip()
     print("PASSWORD Entered......!\n")
     users=getFileAsDic('users.txt')
     for key in users:
         if username == users[key]['user']:
             customer_id = key               
             if username=='admin' and password == users[key]['pass']:
-                print('logged in as admin successfully.....!!!!')
+                print(f"Logged in as ADMIN successfully.....!!!!\n{' ⚜ '*40}")
                 while True:
                     select = admin_menu()
                     if select ==1:      create_customer()
@@ -372,7 +374,7 @@ def main_menu():
                     elif select ==8:    change_pw(input("Enter the USER's Customer ID for change password : "))
                     elif select ==9:    main_menu()
             elif password==users[key]['pass']:
-                print('logged in as admin successfully....!!!!')
+                print(f"Logged in as USER successfully....!!!!\n{' ✔ '*40}")
                 while True:
                     select = user_menu()
                     if select ==1:      check_balance(int(get_acc_no(customer_id)))
@@ -381,14 +383,10 @@ def main_menu():
                     elif select ==4:    transfer_between_accounts(customer_id)
                     elif select ==5:    get_transaction_history_by_acc_no(get_acc_no(customer_id))
                     elif select ==6:    change_pw(customer_id,username)
-                    elif select ==7:
-                        main_menu()
-                        break
+                    elif select ==7:    main_menu()
             else:
                 print('Password is incorrect.! Please retry...!')
                 main_menu()
     else:
-        print('Access Denied...!\nUsername not exists...\n Contact admin for register username and password!')
-
-welcome()           
+        print('Access Denied...!\nUsername not exists...\n Contact admin for register username and password!')         
 main_menu()
