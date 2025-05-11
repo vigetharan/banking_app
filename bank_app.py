@@ -1,4 +1,4 @@
-#importing datetime for get date and time for transaction history
+#importing datetime for get date and time for transaction history.
 from datetime import datetime
 
 import getpass
@@ -106,7 +106,52 @@ def deposit(customer_id, deposit_type):
         file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:{deposit_type},amount:{amount},balance:{new_balance}\n')
         print(f'Your {deposit_type} of {amount:,.2f} is depositted to your account successfully...!\nCurrent BALANCE is :{new_balance:,.2f} ')
 
-        
+from datetime import datetime
+mon=[31,29,31,30,31,30,31,31,30,31,30,31]
+print(mon)
+
+# For get age, DOB, sex from NIC Number
+def get_Nic():
+    while True:
+        nic_no=input("nic no").strip()
+        if(len(nic_no)==12):
+            year = int(nic_no[:4])
+            day_part = int(nic_no[4:7])
+        elif len(nic_no)==10:
+            day_part = int(nic_no[2:5])
+            if int(nic_no[:2])>10:
+                year = int('19'+nic_no[:2]) # for born before 2000, not works for born before year of 1910
+            else:   year = int('20'+nic_no[:2]) #for born after 2000
+        else:
+            print("Invalid NIC number...!💔\tNIC must be (12 digits)/(9 digits with an letter)\nPlease Re-enter correct number.\n")
+            continue
+        age = int(datetime.now().year)-int(year)
+        if day_part<366:
+            days=day_part
+            sex = "MALE"
+            break
+        elif (day_part-500)<366:
+            days=day_part-500
+            sex = "FEMALE"
+            break
+        else:
+            print('🤢NIC Number you entered is not valid....\n Please Re-Enter your correct NIC Number.')
+    #checking for get day and month with [month]
+    sum=0
+    for i in range (12):
+        sum=sum+mon[i]
+        if sum>days:
+            month = i+1
+            b_day = days-sum+(mon[i])
+            break
+        elif sum == days:
+            month = i+1
+            b_day = (mon[i])
+            break
+        i=i+1
+    details=[nic_no,sex,age,year,month,b_day]
+    return details
+
 #function for ger customer information
 def get_customer():
     customer_details={}
@@ -117,21 +162,16 @@ def get_customer():
             continue
         else:
             break
-    while True:
-        try:
-            age = int(input("Enter new Customer's Age : "))
-            if int(age) <18 or int(age)>100:
-                print('Age must between 18 t0 100...\nPlease ReEnter age.')
-                continue
-            else:
-                break
-        except ValueError: 
-            print('age must be a number...!\n Please ReEnter Correct age')
-        continue
+    nic_details=get_Nic()
+    nic_no = nic_details[0]
+    sex = nic_details[1]    
+    age = nic_details[2]    
+    dob = f'{nic_details[3]}-{nic_details[4]}-{nic_details[5]}'
     address = input("Enter new Customer's address : ")
     username = input("Enter new Customer's username : ")
     password = input(f"Enter password for username of {username}: ")
-    return name, age, address, username, password
+    customer_details =[name, address, nic_no, age, sex, dob, username, password]
+    return customer_details
 
 # function for create a customer
 def create_customer():
@@ -139,12 +179,12 @@ def create_customer():
         default=file.readline().split(',')
         customer_id = default[0]
         account_no =int(default[1])
-    name, age, address, username, password =get_customer()
+    details=get_customer()
     with open('customers.txt','a') as file:
-        file.write(f"{customer_id}::Name:{name},Age:{age},Address:{address},Account_no:{account_no}\n")
+        file.write(f"{customer_id}::Name:{details[0]},Address:{details[1]},NIC:{details[2]},Age:{details[3]},sex:{details[4]},dob:{details[5]},Account_no:{account_no}\n")
     print(f'Customer with customer id:- {customer_id} created successfully....!!!\n')
     with open('users.txt','a') as file:
-        file.write(f'{customer_id}::user:{username},pass:{password}\n')
+        file.write(f'{customer_id}::user:{details[6]},pass:{details[7]}\n')
         deposit(customer_id, 'Initial_Deposit')
     print('Account opened successfully...!!!\nInitial Deposit Done....!!!\n')
 #write to file next account number and customer id for next creation
