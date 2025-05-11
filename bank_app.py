@@ -81,37 +81,37 @@ def get_acc_no_as_input():
 
 # function for Deposit
 def deposit(customer_id, deposit_type):
-    date_time=datetime.today().replace(microsecond=0)
-    if deposit_type == 'Initial_Deposit':
-        with open('defaults.txt','r+') as file:
-            default =file.readline().split(',')
-            account_no =int(default[1])
-        new_balance = amount = get_amount('Initial')
-        with open('accounts.txt','a') as file:
-            file.write(f'{account_no}::cus_id:{customer_id},balance:{amount}\n')
-        print(f"Initial deposit of {amount:,.2f} is depositted to your account successfully...!\nCurrent BALANCE is :{new_balance:,.2f} ")
-    elif deposit_type == 'Deposit':
-        try:
-            customers = getFileAsDic('customers.txt')
-            account_no = customers[customer_id]['Account_no']
-            amount = get_amount('Deposit')
-            accounts = getFileAsDic('accounts.txt')
-            accounts[account_no]['balance'] = float(accounts[account_no]['balance']) + amount
-            new_balance =  accounts[account_no]['balance']
-            writeDicToFile(accounts,'accounts.txt')
-        except KeyError:
-            print("Sorry 😒 Deposit was not successful...!")
-            pass
-    with open('transactions.txt','a') as file:
-        file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:{deposit_type},amount:{amount},balance:{new_balance}\n')
-        print(f'Your {deposit_type} of {amount:,.2f} is depositted to your account successfully...!\nCurrent BALANCE is :{new_balance:,.2f} ')
-
-from datetime import datetime
-mon=[31,29,31,30,31,30,31,31,30,31,30,31]
-print(mon)
-
+    try:
+        date_time=datetime.today().replace(microsecond=0)
+        if deposit_type == 'Initial_Deposit':
+            with open('defaults.txt','r+') as file:
+                default =file.readline().split(',')
+                account_no =int(default[1])
+            new_balance = amount = get_amount('Initial')
+            with open('accounts.txt','a') as file:
+                file.write(f'{account_no}::cus_id:{customer_id},balance:{amount}\n')
+            print(f"Initial deposit of {amount:,.2f} is depositted to your account successfully...!\nCurrent BALANCE is :{new_balance:,.2f} ")
+        elif deposit_type == 'Deposit':
+            try:
+                customers = getFileAsDic('customers.txt')
+                account_no = customers[customer_id]['Account_no']
+                amount = get_amount('Deposit')
+                accounts = getFileAsDic('accounts.txt')
+                accounts[account_no]['balance'] = float(accounts[account_no]['balance']) + amount
+                new_balance =  accounts[account_no]['balance']
+                writeDicToFile(accounts,'accounts.txt')
+            except KeyError:
+                print("Sorry 😒 Deposit was not successful...!")
+                pass
+        with open('transactions.txt','a') as file:
+            file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:{deposit_type},amount:{amount},balance:{new_balance}\n')
+            print(f'Your {deposit_type} of {amount:,.2f} is depositted to your account successfully...!\nCurrent BALANCE is :{new_balance:,.2f} ')
+    except UnboundLocalError:
+        print(f"\t{'X'*45}\n\t\tCustomer id is invalid, please retry again\n")
+        pass
 # For get age, DOB, sex from NIC Number
 def get_Nic():
+    mon=[31,29,31,30,31,30,31,31,30,31,30,31]
     while True:
         nic_no=input("nic no").strip()
         if(len(nic_no)==12):
