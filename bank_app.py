@@ -1,12 +1,13 @@
-from datetime import datetime                           #importing datetime for get date and time for transaction history.
-import getpass                                          #create a Text file as users.txt for keeping Default Username and password
+from datetime import datetime                   #importing datetime for get date and time for transaction history.
+import getpass                                          
+#create a Text file as users.txt for keeping Default Username and password
 try:
     with open('users.txt','x') as file:
         file.write('Admin::user:admin,pass:1234\n')
 except FileExistsError:
     pass
 
-try:                                                    #create a Text file as defaults.txt for keeping upcoming Customer Id and Account Number.......
+try:                                            #create a Text file as defaults.txt for keeping upcoming Customer Id and Account Number.......
     with open('defaults.txt','x') as file:
         file.write('C0001,100001')
 except FileExistsError:
@@ -41,19 +42,21 @@ def writeDicToFile(dic,to_file):                        # function for getting a
         file.write(data)
 
 def get_amount(type):                                       # for Get a valid amount
-    if type == 'Initial':       note='To open an account enter the Amount for initial deposit : '
-    elif type == "Withdraw":    note = 'Enter the amount to Withdraw : '
-    elif type == 'Deposit':     note = 'Enter the amount to Deposit : '
-    elif type == "Transfer":    note = 'Enter the amount for Transfer : '
-    while True:
-        try:
-            amount = float(input(note))
-            if amount>0: return amount
-            else:
-                print('The amount must be greater than zero...!')
+    while type:
+        if type == 'Initial':       note='To open an account enter the Amount for initial deposit : '
+        elif type == "Withdraw":    note = 'Enter the amount to Withdraw : '
+        elif type == 'Deposit':     note = 'Enter the amount to Deposit : '
+        elif type == "Transfer":    note = 'Enter the amount for Transfer : '
+        while True:
+            try:
+                amount = float(input(note))
+                if amount>0: return amount
+                else:
+                    print('The amount must be greater than zero...!')
+                    continue
+            except ValueError:
+                print("Amount must be in digits only")
                 continue
-        except ValueError:
-            print("Amount must be in digits only")
 
 def get_acc_no(customer_id):                            #function for get account by customer id
     customers=getFileAsDic('customers.txt')
@@ -73,7 +76,7 @@ def get_acc_no_as_input():                              #check account number av
             print('Account number must be numbers and contains only 6 Digits.\n')
             continue
 
-# function for Deposit
+# function for Deposit by passing account number or customer id.
 def deposit(number, deposit_type):
     try:
         date_time=datetime.today().replace(microsecond=0)
@@ -103,7 +106,7 @@ def deposit(number, deposit_type):
             file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:{deposit_type},amount:{amount},balance:{new_balance}\n')
         print(f'Your {deposit_type} of {amount:,.2f} is depositted to your account successfully...!\n\tCurrent BALANCE is \t:{new_balance:,.2f}\n')
     except (UnboundLocalError,KeyError):
-        print(f"\t\tCustomer id or Account Number is invalid, please retry again\n\t\t{'X'*45}\n")
+        print(f"\t❌❌❌\tCustomer id or Account Number is invalid, please RE-Try again\n\t\t{'X'*45}\n")
         pass
 
 def withdrawal(customer_id):                                #FUNCTION FOR WITHDRAWAL
@@ -124,21 +127,21 @@ def withdrawal(customer_id):                                #FUNCTION FOR WITHDR
         file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:Withdrawal,amount:{amount},balance:{new_balance}\n')
     print(f'Withdraw of {amount:,.2f} from your account is succcessful !!!\nThe new balance is \t: {new_balance}')
 
-def get_Nic():                                      # For get age, DOB, sex from NIC Number
-    mon=[31,29,31,30,31,30,31,31,30,31,30,31]       #assign days in month for check date_part is which day of the year
+def get_Nic():                                      # function For get age, DOB, sex from NIC Number
+    mon=[31,29,31,30,31,30,31,31,30,31,30,31]       #assign days in 12 months for check date_part is which day of the year
     while True:
         try:        
-            nic_no=input(f"{'Enter your NIC Number  ':<40}:").strip()
-            if(len(nic_no)==12):
+            nic_no=input(f"{'Enter your NIC Number  ':<50}:").strip()
+            if(len(nic_no)==12) and nic_no.isdigit():
                 year = int(nic_no[:4])
                 day_part = int(nic_no[4:7])
             elif len(nic_no)==10:
                 day_part = int(nic_no[2:5])
                 if int(nic_no[:2])>10:
-                    year = int('19'+nic_no[:2]) # for born before 2000, not works for born before year of 1910
-                else:   year = int('20'+nic_no[:2]) #for born after 2000
-            else:
-                print("\tInvalid NIC number...!💔\tNIC must be (12 digits)/(9 digits with an letter)\nPlease Re-enter correct number.\n")
+                    year = int('19'+nic_no[:2])         # for born before 2000, not works for born before year of 1910
+                else:   year = int('20'+nic_no[:2])     #for born after 2000
+            else:                                       # user input doesn't meet requirement of 10 or 12 digits.
+                print("\t❌❌❌\tInvalid NIC number...!💔\tNIC must be (12 digits)/(9 digits with an letter)\nPlease Re-enter correct number.\n")
                 continue
             age = int(datetime.now().year)-year
             if day_part<366:
@@ -148,7 +151,7 @@ def get_Nic():                                      # For get age, DOB, sex from
                 days=day_part-500
                 sex = "FEMALE"
             else:
-                print('\t💥NIC Number you entered is not valid....\n\t Please Re-Enter your correct NIC Number.')
+                print('\t❌❌❌\t💥NIC Number you entered is not valid....\n\t Please Re-Enter your correct NIC Number.')
                 continue
             sum=0                                                           #checking for get day and month with [month]
             for i in range (12):
@@ -171,7 +174,7 @@ def get_Nic():                                      # For get age, DOB, sex from
 def get_customer_details():                                 #function for ger customer information
     customer_details={}
     while True:
-        name = input(f"{"Enter new Customer's name  ":<40}:")
+        name = input(f"{"Enter new Customer's name  ":<50}:")
         if len(name) < 3:
             print("\t💥NAME must be in letters only and minimum 3 letters... please re enter a valid name")
             continue
@@ -185,9 +188,17 @@ def get_customer_details():                                 #function for ger cu
     sex = nic_details[1]    
     age = nic_details[2]    
     dob = f'{nic_details[3]}-{nic_details[4]}-{nic_details[5]}'
-    address = input(f"{"Enter new Customer's address":<40}:")
-    username = input(f"{"Enter new Customer's username ":<40}:")
-    password = getpass.getpass(f"Enter password for username of {username:}\t: ")
+    address = input(f"{"Enter new Customer's address":<50}:")
+    users = getFileAsDic('users.txt')
+    while True:                                                         #checking for username already exists in system.
+        username = input(f"{"Enter new Customer's username ":<50}:")
+        for key,value in users.items():
+            if username == users[key]['user']:
+                print('\t\t😔😔😔\t User name already exists please Retry with another one')
+                break
+        else:   break
+    print('Password, you typing is INVISIBLE, please type a password and HIT ENTER KEY!!!')
+    password = getpass.getpass(f"{'   Enter password for username of {username}':<50}")
     customer_details =[name, address, nic_no, age, sex, dob, username, password]
     return customer_details
 
@@ -200,88 +211,94 @@ def create_customer():
     details=get_customer_details()
     with open('customers.txt','a') as file:
         file.write(f"{customer_id}::Name:{details[0]},Address:{details[1]},NIC:{details[2]},Age:{details[3]},sex:{details[4]},dob:{details[5]},Account_no:{account_no}\n")
-    print(f'Customer with customer id:- {customer_id} created successfully....!!!\n')
+    print(f'\n\t🆗\tCustomer with customer id:- {customer_id} created successfully....!!!\n')
     with open('users.txt','a') as file:
         file.write(f'{customer_id}::user:{details[6]},pass:{details[7]}\n')
         deposit(customer_id, 'Initial_Deposit')
-    print(f'Account opened successfully...!!!\n{'#'*36}\n')
-#write to file next account number and customer id for next creation
+    print(f'\t🆗\tAccount opened successfully...!!!\n{'#'*36}\n')
+# To write file next account number and customer id for next creation with an increment.
     next_account_no = account_no +1
     num_partOf_customer_id = int(customer_id[1:])
     next_customer_id = (f'C{(num_partOf_customer_id + 1):04}')
     with open('defaults.txt','w') as file:
         file.write(f'{next_customer_id},{next_account_no}')
 
-def check_balance(accountNo):                                       #fUNCTION FOR BALANCE CHECK
+def check_balance(accountNo):                                     #fUNCTION FOR BALANCE CHECK
+    account_no = accountNo
     accounts=getFileAsDic('accounts.txt')
-    for key in accounts:
-        if int(key) == int(accountNo):
-            balance = float(accounts[key]['balance'])
-    print(f'Current Account balance of {accountNo} is : {balance:,.2f}\n')
+    if account_no in accounts:
+        for key in accounts:
+            if int(key) == int(accountNo):
+                balance = float(accounts[key]['balance'])
+        print(f'Current Account balance of {accountNo} is : {balance:,.2f}\n')
+    else:
+        print("❌❌❌Account number you entered is not in our system,\n\tplease Try again....!")
 
 def login_history():
     log = getFileAsDic('login_history.txt')
     print(f"{'*'*36}\n\t\t\t\tLOGIN HISTORY OF THIS BANKING SYSTEM\n{'*'*36}")
-    print(f"{'No.':<5}{'DATE':<25}{'CUSTOMER ID':<25}{'LOGGED USER'}\n")
+    print(f"\t{'No.':<5}{'DATE':<25}{'CUSTOMER ID':<25}{'LOGGED USER'}\n")
     order_no = 0
     for key in log:
-        print(f"{order_no:<5}{key:<25}{log[key]['c_id']:<25}{log[key]['user']}")
+        print(f"\t{order_no:<5}{key:<25}{log[key]['c_id']:<25}{log[key]['user']}")
 
 
 def get_transaction_history_by_acc_no(account_no):                              #getting Transaction history for a given Account Number 
     print(f"{'*'*36}\nTRANSACTION HISTORY OF {account_no}\n{'*'*36}")
-    print(f"{'No.':<5}{'date':<25}{'type of transaction':<25}{'amount':>20}{'balance':>20}\n{'='*5:<5}{'='*5:<25}{'='*5:<25}{'='*5:<20}{'='*5:<20}")
+    print(f"\t{'No.':<5}{'date':<25}{'type of transaction':<25}{'amount':>20}{'balance':>20}\n\t{'='*2:<5}{'='*10:<25}{'='*18:<35}{'='*10:<20}{'='*10:<20}")
     transactions=getFileAsDic('transactions.txt')
     order_no = 0
     for key,value in transactions.items():
         if str(value['acc_no']) == str(account_no):
             order_no +=1
-            print(f"{order_no:<5}{key:<25}{value['type']:<25}{float(value['amount']):>20,.2f}{float(value['balance']):>20,.2f}\n")
+            print(f"\t{order_no:<5}{key:<25}{value['type']:<25}{float(value['amount']):>20,.2f}{float(value['balance']):>20,.2f}\n")
     if order_no == 0:
-        print("No transactions found for given sccount number.\n")
+        print("❌❌❌No transactions found for given sccount number.\n")
 
 #getting transaction history by date
 def get_transaction_history_by_date(date):
     print(f"TRANSACTION HISTORY FOR {date}\n{'*'*81}")
-    print(f"{'No.':<5}{'Account No.':<15}{'type of transaction':<25}{'amount':>20}{'balance':>20}")
+    print(f"\t{'No.':<5}{'Account No.':<15}{'type of transaction':<25}{'amount':>20}{'balance':>20}")
     transactions=getFileAsDic('transactions.txt')
     order_no = 0
     for key in transactions:
         if key.startswith(date):
             order_no +=1
-            print(f"{order_no:<5}{transactions[key]['acc_no']:<15}{transactions[key]['type']:<25}{float(transactions[key]['amount']):>20,.2f}{float(transactions[key]['balance']):>20,.2f}\n")
+            print(f"\t{order_no:<5}{transactions[key]['acc_no']:<15}{transactions[key]['type']:<25}{float(transactions[key]['amount']):>20,.2f}{float(transactions[key]['balance']):>20,.2f}\n")
     if order_no == 0:
-        print("No transactions found in given date.\n")
+        print("\t❌❌❌No transactions found in given date.\n")
 
 #function for inter bank account transfers
 def transfer_between_accounts(customer_id):
     date_time=datetime.today().replace(microsecond=0)
     accounts = getFileAsDic('accounts.txt')
     customers = getFileAsDic('customers.txt')
-    print("Transfer Money to another account")
-    to_Acc = get_acc_no_as_input()
-    print("\nTo Transfer Money to another account")
     account_no = customers[customer_id]['Account_no']
-    while True:
-        amount = get_amount("Transfer")
-        if amount > float(accounts[account_no]['balance']):
-            print('Amount Exceeded account balance...\n amount must be lower than account balance...\n')
-            continue
-        else: break
     if account_no in accounts:
+        balance = float(accounts[account_no]['balance'])
+        print(f"Your current BALANCE is : {balance}\nTransfer Money to another account, ", end=" * ")
+        to_Acc = get_acc_no_as_input()
+        print("\nTo Transfer Money to another account")
+        while True:
+            amount = get_amount("Transfer")
+            if amount > balance :
+                print('\t🚫\tAmount Exceeded account balance...\n \tAmount must be lower than account balance...\n')
+                continue
+            else: break
         accounts[account_no]['balance'] = float(accounts[account_no]['balance']) - amount
         new_balance = accounts[account_no]['balance']
         writeDicToFile(accounts,'accounts.txt')
         with open('transactions.txt','a') as file:
             file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:Transfer Debit,amount:{amount},balance:{new_balance}\n')
-        print(f'Transfer of {amount:,.2f} from your account to ACCOUNT : {to_Acc} is succcessful !!!\n')
-    accounts[to_Acc]['balance'] = float(accounts[to_Acc]['balance']) + amount
-    new_balance =  accounts[to_Acc]['balance']
-    writeDicToFile(accounts,'accounts.txt')
-    date_time1=datetime.today().replace(microsecond=0)
-    with open('transactions.txt','a') as file:
-        file.write(f'{date_time1}::cus_id:{customer_id},acc_no:{to_Acc},type:Transfer credit,amount:{amount},balance:{new_balance}\n')
-
+        print(f'Transfer of {amount:,.2f} from your account to account : {to_Acc} is succcessful !!!\nAnd the money was debitted form your account.\n\t\t your current balance is : {new_balance}')
+        accounts[to_Acc]['balance'] = float(accounts[to_Acc]['balance']) + amount
+        new_balance =  accounts[to_Acc]['balance']
+        writeDicToFile(accounts,'accounts.txt')
+        date_time1=datetime.today().replace(microsecond=0)
+        with open('transactions.txt','a') as file:
+            file.write(f'{date_time1}::cus_id:{customer_id},acc_no:{to_Acc},type:Transfer credit,amount:{amount},balance:{new_balance}\n')
+    else:
+        print(f"\t👎\tInvalid Customer id OR Account not created yet.\n\t\t\tPlease contact bank for further assistants.")
 def change_pw(c_id,username):
     users=getFileAsDic('users.txt')
     for key in users:
@@ -412,8 +429,9 @@ def main_menu():
                         print(f"Thank you ..........\n{'✈ 🛩 🚀 '*10}")
                         main_menu()
             else:
-                print('Password is incorrect.! Please retry...!')
+                print('\tPassword is incorrect.! Please retry...!')
                 main_menu()
-        else:
-            print('Access Denied...!\nUsername not exists...\n Contact admin for register username and password!')        
+    else:
+        print('\t⛔⛔⛔Access Denied...!\n\tUsername is not exists in our system...\n \tContact admin for register username and password!')
+        main_menu()        
 main_menu()
