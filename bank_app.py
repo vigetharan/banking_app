@@ -102,8 +102,8 @@ def deposit(number, deposit_type):
         with open('transactions.txt','a') as file:
             file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:{deposit_type},amount:{amount},balance:{new_balance}\n')
         print(f'Your {deposit_type} of {amount:,.2f} is depositted to your account successfully...!\n\tCurrent BALANCE is \t:{new_balance:,.2f}\n')
-    except UnboundLocalError:
-        print(f"\t\tCustomer id is invalid, please retry again\n\t\t{'X'*45}\n")
+    except (UnboundLocalError,KeyError):
+        print(f"\t\tCustomer id or Account Number is invalid, please retry again\n\t\t{'X'*45}\n")
         pass
 
 def withdrawal(customer_id):                                #FUNCTION FOR WITHDRAWAL
@@ -320,7 +320,7 @@ def admin_menu():
         print('\t4. Check transaction history of a account')
         print('\t5. Check transaction history by a date.')
         print("\t6. view an account's balance")
-        print("\t7. Vciew Login History")
+        print("\t7. View Login History")
         print("\t8. Change password")
         print('\t9. Logout')
         print('\t0. Exit\n')
@@ -340,10 +340,10 @@ def admin_menu():
 def user_menu():
     print(f"{'=-'*63}\n\t\t\tWELCOME TO ABCD BANK AS AN USER...!!!!\n{'=-'*63}")
     while True:
-        print('\t1. Check Balance of an account')
+        print('\t1. Check Balance of your account')
         print('\t2. Deposit to your account.')
         print('\t3. Withdrawal from your account.')
-        print('\t4. To Transfer money to Another Account.')
+        print('\t4. To Transfer money to Another Account from your account.')
         print('\t5. Transaction History of your account.')
         print('\t6. change your login password.')
         print('\t7. Logout.')
@@ -392,9 +392,9 @@ def main_menu():
                         else:
                             print("invalid choice....!!!\n Please retry....!!!")
                             continue
-                    elif select ==9:
+                    elif select == 9:
                         print(f"Thank you ..........\n{'✈ 🛩 🚀 '*10}")
-                        main_menu()
+                        main_menu()        
             elif password==users[key]['pass']:
                 print(f"Logged in as USER successfully....!!!!\n{' ✔ '*40}")
                 date_time3 = datetime.today().replace(microsecond=0)
@@ -414,6 +414,6 @@ def main_menu():
             else:
                 print('Password is incorrect.! Please retry...!')
                 main_menu()
-    else:
-        print('Access Denied...!\nUsername not exists...\n Contact admin for register username and password!')         
+        else:
+            print('Access Denied...!\nUsername not exists...\n Contact admin for register username and password!')        
 main_menu()
