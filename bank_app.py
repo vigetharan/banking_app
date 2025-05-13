@@ -19,15 +19,19 @@ def welcome():                                                   #function for a
 
 def getFileAsDic(file):                                 # function for getting a text file into a dictioanary
     dic={}
-    with open(file,'r') as file:
-        for line in file:
-            key,value= line.strip().split('::')
-            sub_dic={}
-            for item in value.split(','):
-                sub_key,sub_value =item.split(':') 
-                sub_dic[sub_key]=sub_value
-            dic[key] = sub_dic
-        return dic
+    try:
+        with open(file,'r') as file:
+            for line in file:
+                key,value= line.strip().split('::')
+                sub_dic={}
+                for item in value.split(','):
+                    sub_key,sub_value =item.split(':') 
+                    sub_dic[sub_key]=sub_value
+                dic[key] = sub_dic
+            return dic
+    except FileNotFoundError:
+        print("✖️✖️✖️file not created yet, First create a customer with an account and TRY again....!")
+        pass
  
 def writeDicToFile(dic,to_file):                        # function for getting a dictioanary into a file
     data=""
@@ -63,18 +67,21 @@ def get_acc_no(customer_id):                            #function for get accoun
     account_num = customers[customer_id]['Account_no']
     return int(account_num)
 
-def get_acc_no_as_input():                              #check account number available in accounts details
-    accounts=getFileAsDic('accounts.txt')
-    while True:
-        try:
-            acc_num = input("Please Enter account number : ")
-            for key in accounts:
-                if key == acc_num:
-                    return acc_num
-            print('\tAccount number is not available or not valid\nEnter the correct one OR Contact bank for create an account...\n')
-        except (KeyError, ValueError):
-            print('Account number must be numbers and contains only 6 Digits.\n')
-            continue
+def get_acc_no_as_input():
+    try:                              #check account number available in accounts details
+        accounts=getFileAsDic('accounts.txt')
+        while True:
+            try:
+                acc_num = input("Please Enter account number : ")
+                for key in accounts:
+                    if key == acc_num:
+                        return acc_num
+                print('\tAccount number is not available or not valid\nEnter the correct one OR Contact bank for create an account...\n')
+            except (KeyError, ValueError):
+                print('Account number must be numbers and contains only 6 Digits.\n')
+                continue
+    except (FileNotFoundError, TypeError):
+        print("Account number you entered is not created yet....!")
 
 # function for Deposit by passing account number or customer id.
 def deposit(number, deposit_type):
@@ -105,8 +112,8 @@ def deposit(number, deposit_type):
         with open('transactions.txt','a') as file:
             file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:{deposit_type},amount:{amount},balance:{new_balance}\n')
         print(f'Your {deposit_type} of {amount:,.2f} is depositted to your account successfully...!\n\tCurrent BALANCE is \t:{new_balance:,.2f}\n')
-    except (UnboundLocalError,KeyError):
-        print(f"\t❌❌❌\tCustomer id or Account Number is invalid, please RE-Try again\n\t\t{'X'*45}\n")
+    except (UnboundLocalError,KeyError, FileNotFoundError):
+        print(f"\t❌❌❌\tCustomer id or Account Number is invalid or not registered, please RE-Try again or contact bank for further details\n\t\t{'X'*45}\n")
         pass
 
 def withdrawal(customer_id):                                #FUNCTION FOR WITHDRAWAL
@@ -224,37 +231,44 @@ def create_customer():
         file.write(f'{next_customer_id},{next_account_no}')
 
 def check_balance(accountNo):                                     #fUNCTION FOR BALANCE CHECK
-    account_no = accountNo
-    accounts=getFileAsDic('accounts.txt')
-    if account_no in accounts:
-        for key in accounts:
-            if int(key) == int(accountNo):
-                balance = float(accounts[key]['balance'])
-        print(f'Current Account balance of {accountNo} is : {balance:,.2f}\n')
-    else:
-        print("❌❌❌Account number you entered is not in our system,\n\tplease Try again....!")
-
+    try:
+        account_no = accountNo
+        accounts=getFileAsDic('accounts.txt')
+        if account_no in accounts:
+            for key in accounts:
+                if int(key) == int(accountNo):
+                    balance = float(accounts[key]['balance'])
+            print(f'Current Account balance of {accountNo} is : {balance:,.2f}\n')
+        else:
+            print("❌❌❌Account number you entered is not in our system,\n\tplease Try again....!")
+    except (UnboundLocalError, KeyError, FileNotFoundError, TypeError):
+        print(f"\t❌❌❌\tAccount Number is invalid or not registered, please RE-Try again or contact bank for further details\n\t\t{'X'*45}\n")
+        pass
 def login_history():
     log = getFileAsDic('login_history.txt')
-    print(f"{'*'*36}\n\t\t\t\tLOGIN HISTORY OF THIS BANKING SYSTEM\n{'*'*36}")
-    print(f"\t{'No.':<5}{'DATE':<25}{'CUSTOMER ID':<25}{'LOGGED USER'}\n")
+    print(f"\t\t\t\t{'*'*36}\n\t\t\t\tLOGIN HISTORY OF THIS BANKING SYSTEM\n\t\t\t\t{'*'*36}")
+    print(f"\t{'No.':<5}{'DATE':<25}{'CUSTOMER ID':<25}{'LOGGED USER NAME'}\n")
     order_no = 0
     for key in log:
         print(f"\t{order_no:<5}{key:<25}{log[key]['c_id']:<25}{log[key]['user']}")
+        order_no +=1
 
 
-def get_transaction_history_by_acc_no(account_no):                              #getting Transaction history for a given Account Number 
-    print(f"{'*'*36}\nTRANSACTION HISTORY OF {account_no}\n{'*'*36}")
-    print(f"\t{'No.':<5}{'date':<25}{'type of transaction':<25}{'amount':>20}{'balance':>20}\n\t{'='*2:<5}{'='*10:<25}{'='*18:<35}{'='*10:<20}{'='*10:<20}")
-    transactions=getFileAsDic('transactions.txt')
-    order_no = 0
-    for key,value in transactions.items():
-        if str(value['acc_no']) == str(account_no):
-            order_no +=1
-            print(f"\t{order_no:<5}{key:<25}{value['type']:<25}{float(value['amount']):>20,.2f}{float(value['balance']):>20,.2f}\n")
-    if order_no == 0:
-        print("❌❌❌No transactions found for given sccount number.\n")
-
+def get_transaction_history_by_acc_no(account_no): 
+    try:                             #getting Transaction history for a given Account Number 
+        print(f"{'*'*36}\nTRANSACTION HISTORY OF {account_no}\n{'*'*36}")
+        print(f"\t{'No.':<5}{'date':<25}{'type of transaction':<25}{'amount':>20}{'balance':>20}\n\t{'='*2:<5}{'='*10:<25}{'='*18:<35}{'='*10:<20}{'='*10:<20}")
+        transactions=getFileAsDic('transactions.txt')
+        order_no = 0
+        for key,value in transactions.items():
+            if str(value['acc_no']) == str(account_no):
+                order_no +=1
+                print(f"\t{order_no:<5}{key:<25}{value['type']:<25}{float(value['amount']):>20,.2f}{float(value['balance']):>20,.2f}\n")
+        if order_no == 0:
+            print("❌❌❌No transactions found for given sccount number.\n")
+    except (UnboundLocalError, KeyError, FileNotFoundError):
+        print(f"\t❌❌❌\tAccount Number is invalid or not registered, please RE-Try again or contact bank for further details\n\t\t{'X'*45}\n")
+        pass
 #getting transaction history by date
 def get_transaction_history_by_date(date):
     print(f"TRANSACTION HISTORY FOR {date}\n{'*'*81}")
@@ -379,13 +393,20 @@ def user_menu():
             continue
 
 # Main menu for execution of main program.
+attempt = 3
 def main_menu():
+    global attempt
     welcome()
     username=input('\tEnter your username : ').strip()
     password=getpass.getpass('Password, you typing is INVISIBLE, please type correct password and HIT ENTER KEY!!!\n\tEnter your password  : ').strip()
     print("\t\t\t✔✔✔✔✔\tPASSWORD Entered......!\t✔✔✔✔✔")
     users=getFileAsDic('users.txt')
     for key in users:
+        if attempt ==0:
+            print("You exceeded maximum attempt of login try allowed...!")
+            exit()
+        else:
+            print(f"\n\t\t\tYou have ⚠️ {attempt} ⚠️ more chances for try login.\n")
         if username == users[key]['user']:
             customer_id = key               
             if username=='admin' and password == users[key]['pass']:
@@ -430,8 +451,10 @@ def main_menu():
                         main_menu()
             else:
                 print('\tPassword is incorrect.! Please retry...!')
+                attempt -=1
                 main_menu()
     else:
         print('\t⛔⛔⛔Access Denied...!\n\tUsername is not exists in our system...\n \tContact admin for register username and password!')
+        attempt -=1
         main_menu()        
 main_menu()
