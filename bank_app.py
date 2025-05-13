@@ -141,13 +141,12 @@ def get_Nic():
     while True:
         try:        
             nic_no=input(f"{'Enter your NIC Number  ':<50}:").strip()
-            customers = getFileAsDic('customers.txt')
-            for key, value in customers.items():
-                print(value)
-                if nic_no == value['NIC']:
-                    print(nic_no)
-                    print(f"⚠️NIC number you entered is already exist with customer id of : {key} and name of : {value['Name']}") 
-                    get_Nic()
+             if os.path.exists('customers.txt'): 
+                customers = getFileAsDic('customers.txt')
+                for key, value in customers.items():
+                    if nic_no == value['NIC']:
+                        print(f"⚠️NIC number you entered is already exist with customer id of : {key} and name of : {value['Name']}") 
+                        get_Nic()
             else: pass
             if(len(nic_no)==12) and nic_no.isdigit():
                 year = int(nic_no[:4])
