@@ -139,6 +139,12 @@ def get_Nic():                                      # function For get age, DOB,
     while True:
         try:        
             nic_no=input(f"{'Enter your NIC Number  ':<50}:").strip()
+            customers = getFileAsDic('customers.txt')
+            for key, value in customers.items():
+                if nic_no == value['NIC']:
+                    print(f"⚠️NIC number you entered is already exist with customer id of : {key} and name of : {value['Name']}") 
+                    get_Nic()
+                else:   pass  
             if(len(nic_no)==12) and nic_no.isdigit():
                 year = int(nic_no[:4])
                 day_part = int(nic_no[4:7])
@@ -402,11 +408,6 @@ def main_menu():
     print("\t\t\t✔✔✔✔✔\tPASSWORD Entered......!\t✔✔✔✔✔")
     users=getFileAsDic('users.txt')
     for key in users:
-        if attempt ==0:
-            print("You exceeded maximum attempt of login try allowed...!")
-            exit()
-        else:
-            print(f"\n\t\t\tYou have ⚠️ {attempt} ⚠️ more chances for try login.\n")
         if username == users[key]['user']:
             customer_id = key               
             if username=='admin' and password == users[key]['pass']:
@@ -452,9 +453,20 @@ def main_menu():
             else:
                 print('\tPassword is incorrect.! Please retry...!')
                 attempt -=1
-                main_menu()
+                if attempt ==0:
+                    print("You exceeded maximum attempt of login try allowed...!")
+                    exit()
+                else:
+                    print(f"\n\t\t\tYou have ⚠️ {attempt} ⚠️ more chances for try login.\n")
+                    main_menu()
     else:
         print('\t⛔⛔⛔Access Denied...!\n\tUsername is not exists in our system...\n \tContact admin for register username and password!')
         attempt -=1
+        if attempt ==0:
+            print("You exceeded maximum attempt of login try allowed...!")
+            exit()
+        else:
+            print(f"\n\t\t\tYou have ⚠️ {attempt} ⚠️ more chances for try login.\n")
+            main_menu()
         main_menu()        
 main_menu()
