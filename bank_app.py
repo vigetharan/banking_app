@@ -1,5 +1,6 @@
 from datetime import datetime                   #importing datetime for get date and time for transaction history.
-import getpass                                          
+import getpass
+import os                                         
 #create a Text file as users.txt for keeping Default Username and password
 try:
     with open('users.txt','x') as file:
@@ -134,17 +135,21 @@ def withdrawal(customer_id):                                #FUNCTION FOR WITHDR
         file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:Withdrawal,amount:{amount},balance:{new_balance}\n')
     print(f'Withdraw of {amount:,.2f} from your account is succcessful !!!\nThe new balance is \t: {new_balance}')
 
-def get_Nic():                                      # function For get age, DOB, sex from NIC Number
+ # function For get age, DOB, sex from NIC Number
+def get_Nic():                                     
     mon=[31,29,31,30,31,30,31,31,30,31,30,31]       #assign days in 12 months for check date_part is which day of the year
     while True:
         try:        
             nic_no=input(f"{'Enter your NIC Number  ':<50}:").strip()
-            customers = getFileAsDic('customers.txt')
-            for key, value in customers.items():
-                if nic_no == value['NIC']:
-                    print(f"⚠️NIC number you entered is already exist with customer id of : {key} and name of : {value['Name']}") 
-                    get_Nic()
-                else:   pass  
+            if os.path.exists('customers.txt'):
+                customers = getFileAsDic('customers.txt')
+                for key, value in customers.items():
+                    if nic_no == value['NIC']:
+                        print(f"⚠️NIC number you entered is already exist with customer id of : {key} and name of : {value['Name']}") 
+                        get_Nic()
+                    else:
+                        break
+            else: pass
             if(len(nic_no)==12) and nic_no.isdigit():
                 year = int(nic_no[:4])
                 day_part = int(nic_no[4:7])
@@ -154,7 +159,7 @@ def get_Nic():                                      # function For get age, DOB,
                     year = int('19'+nic_no[:2])         # for born before 2000, not works for born before year of 1910
                 else:   year = int('20'+nic_no[:2])     #for born after 2000
             else:                                       # user input doesn't meet requirement of 10 or 12 digits.
-                print("\t❌❌❌\tInvalid NIC number...!💔\tNIC must be (12 digits)/(9 digits with an letter)\nPlease Re-enter correct number.\n")
+                print("\t\tInvalid NIC number...!\tNIC must be (12 digits)/(9 digits with an letter)\nPlease Re-enter correct number.\n")
                 continue
             age = int(datetime.now().year)-year
             if day_part<366:
@@ -164,7 +169,7 @@ def get_Nic():                                      # function For get age, DOB,
                 days=day_part-500
                 sex = "FEMALE"
             else:
-                print('\t❌❌❌\t💥NIC Number you entered is not valid....\n\t Please Re-Enter your correct NIC Number.')
+                print('\t\t💥NIC Number you entered is not valid....\n\t Please Re-Enter your correct NIC Number.')
                 continue
             sum=0                                                           #checking for get day and month with [month]
             for i in range (12):
@@ -180,7 +185,7 @@ def get_Nic():                                      # function For get age, DOB,
                 i=i+1
             details=[nic_no,sex,age,year,month,b_day]
             return details
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, AttributeError):
             print("\t💥Invalid NIC number...!💔\tNIC must be (12 digits)/(9 digits with an letter)\nPlease Re-enter correct number.\n")
             continue
 
@@ -228,7 +233,7 @@ def create_customer():
     with open('users.txt','a') as file:
         file.write(f'{customer_id}::user:{details[6]},pass:{details[7]}\n')
         deposit(customer_id, 'Initial_Deposit')
-    print(f'\t🆗\tAccount opened successfully...!!!\n{'#'*36}\n')
+    print(f'\t🆗\tAccount opened successfully...!!!\n\t\t{'#'*36}\n')
 # To write file next account number and customer id for next creation with an increment.
     next_account_no = account_no +1
     num_partOf_customer_id = int(customer_id[1:])
