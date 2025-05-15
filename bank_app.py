@@ -362,9 +362,9 @@ def delete_customer(customer_id):
         for key in customers:
             if key == customer_id:
                 if input('Please Confirm the customer ID for delete : ') == customer_id:
-                    if input().upper('Are You Sure About Deletion ?\nEnter Y/N for confirm : ') == 'Y':
+                    if input('Are You Sure About Deletion ?\nEnter Y/N for confirm : ').upper() == 'Y':
                         customers.pop(customer_id)
-                        users.pop(customer_id)
+                        del users[customer_id]
                         print('Customer deleted from customers and users successfully')
                         break
                     else:
@@ -374,7 +374,7 @@ def delete_customer(customer_id):
                 print('Customer ID is not found, please RE-Try with the correct one. ')
         for key, value in accounts.items():
             if value['cus_id'] == customer_id:
-                accounts.pop(key)
+                del accounts[key]
                 print('Customer deleted from accounts successfully')
                 break
         else: print('No accounts found for given Customer ID\n')
