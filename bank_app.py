@@ -190,11 +190,12 @@ def get_Nic():
 def get_customer_details():                                 #function for ger customer information
     customer_details={}
     while True:
-        name = input(f"{"Enter new Customer's name  ":<50}:")
+        name = input(f"{"Enter new Customer's name in full : ":<50}:").strip().title()
+        space_removed_name = name.replace(' ','')
         if len(name) < 3:
             print("\t💥NAME must be in letters only and minimum 3 letters... please re enter a valid name")
             continue
-        elif not  name.isalpha():
+        elif not  space_removed_name.isalpha():
             print("\t💥NAME must be in letters only and minimum 3 letters... please re enter a valid name")
             continue
         else:
