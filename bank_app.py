@@ -141,7 +141,7 @@ def get_Nic():
     while True:
         try:        
             nic_no=input(f"{'Enter your NIC Number  ':<50}:").strip()
-             if os.path.exists('customers.txt'): 
+            if os.path.exists('customers.txt'): 
                 customers = getFileAsDic('customers.txt')
                 for key, value in customers.items():
                     if nic_no == value['NIC']:
@@ -349,12 +349,66 @@ def view_customer_details(c_id):
                 exit()
             else:
                 c_id = input("Enter customer id for get details : ")
+def delete_customer(customer_id):
+    customers = getFileAsDic('customers.txt')
+    transactions = getFileAsDic('transactions.txt')
+    transactions1=transactions.copy()
+    accounts = getFileAsDic('accounts.txt')
+    users = getFileAsDic('users.txt')
+    login_history = getFileAsDic('login_history.txt')
+    login_history1 = login_history.copy()
+    account_no = customers[customer_id]['Account_no']
+    try:
+        for key in customers:
+            if key == customer_id:
+                if input('Please Confirm the customer ID for delete : ') == customer_id:
+                    if input().upper('Are You Sure About Deletion ?\nEnter Y/N for confirm : ') == 'Y':
+                        customers.pop(customer_id)
+                        users.pop(customer_id)
+                        print('Customer deleted from customers and users successfully')
+                        break
+                    else:
+                        print("THANK YOU for your confirmation as 'NO' .")
+                        return
+        else:
+                print('Customer ID is not found, please RE-Try with the correct one. ')
+        for key, value in accounts.items():
+            if value['cus_id'] == customer_id:
+                accounts.pop(key)
+                print('Customer deleted from accounts successfully')
+                break
+        else: print('No accounts found for given Customer ID\n')
+        no_of_transactions = 0
+        for key, value in transactions1.items():
+            if value['cus_id'] == customer_id:
+                transactions.pop(key)
+                no_of_transactions += 1
+        print(f'{no_of_transactions} Customer Transactions were deleted from Transactions History successfully')
+        if no_of_transactions == 0:
+            print('No Transactions found for given Customer ID\n')
+        no_of_login = 0
+        for key, value in login_history1.items():
+            if value['c_id'] == customer_id:
+                login_history.pop(key)
+                no_of_login += 1
+        print(f'{no_of_login} Customer Logins were deleted from login_history History successfully\n')
+        if no_of_login == 0:
+            print('No Logins found for given Customer ID\n')
+        writeDicToFile(users, 'users.txt')
+        writeDicToFile(customers, 'customers.txt')
+        writeDicToFile(accounts, 'accounts.txt')
+        writeDicToFile(transactions, 'transactions.txt')
+        writeDicToFile(login_history, 'login_history.txt')
+    except KeyError:
+        print('Something going wrong, please retry with correct customer-ID')
+        pass
 
 #MENU FOR PROCESS AS ADMIN, if admin logged in successful.
 def admin_menu():
     print(f"{'=-'*63}\n\t\t\tWELCOME TO ABCD BANK as an ADMIN...!!!!\n{'=-'*63}")
     while True:
         print('\t1. Create a customer')
+        print('\t11. Delete Customer')
         print('\t2. Deposit to an account')
         print("\t3. View a customer's details")
         print('\t4. Check transaction history of a account')
@@ -366,7 +420,7 @@ def admin_menu():
         print('\t0. Exit\n')
         try:
             choice=int(input('As a admin please chose a choice : '))
-            if choice in [1,2,3,4,5,6,7,8,9]:
+            if choice in [1,2,3,4,5,6,7,8,9,11]:
                 return choice
             elif choice ==0:
                 exit()
@@ -421,6 +475,9 @@ def main_menu():
                 while True:
                     select = admin_menu()
                     if select ==1:      create_customer()
+                    if select ==11:
+                        del_cus_id = input('Enter the Customer -ID for delete : ')
+                        delete_customer(del_cus_id)
                     elif select ==2:    deposit(input("Enter Customer's ID or Account number for Deposit : "), "Deposit")
                     elif select ==3:    view_customer_details(input("Enter Customer's ID for Details : " ))
                     elif select ==4:    get_transaction_history_by_acc_no(get_acc_no_as_input())
