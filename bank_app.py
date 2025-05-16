@@ -134,6 +134,8 @@ def withdrawal(customer_id):                                #FUNCTION FOR WITHDR
     with open('transactions.txt','a') as file:
         file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:Withdrawal,amount:{amount},balance:{new_balance}\n')
     print(f'Withdraw of {amount:,.2f} from your account is succcessful !!!\nThe new balance is \t: {new_balance}')
+    if new_balance < 5000:
+        print("⚠ Please note that your account balance is below 5000.00")
 
  # function For get age, DOB, sex from NIC Number
 def get_Nic():                                     
@@ -315,6 +317,8 @@ def transfer_between_accounts(customer_id):
         with open('transactions.txt','a') as file:
             file.write(f'{date_time}::cus_id:{customer_id},acc_no:{account_no},type:Transfer Debit,amount:{amount},balance:{new_balance}\n')
         print(f'Transfer of {amount:,.2f} from your account to account : {to_Acc} is succcessful !!!\nAnd the money was debitted form your account.\n\t\t your current balance is : {new_balance}')
+        if new_balance < 5000:
+            print("⚠ Please note that your account balance is below 5000.00")
         accounts[to_Acc]['balance'] = float(accounts[to_Acc]['balance']) + amount
         new_balance =  accounts[to_Acc]['balance']
         writeDicToFile(accounts,'accounts.txt')
@@ -404,12 +408,38 @@ def delete_customer(customer_id):
         print('Something going wrong, please retry with correct customer-ID')
         pass
 
+def display_total_users():
+    users = getFileAsDic("users.txt")
+    total_users = len(users)
+    no_of_admin = 0
+    no_of_user = 0
+    for key, value in users.items():
+        if users[key]['user'] == "admin":
+            no_of_admin += 1
+        elif key.startswith('C'):
+            no_of_user += 1
+    if no_of_admin == 0 and no_of_user == 0:
+        print('No users found or no users registered yet.')
+    print(f'Total number of users registered in this system is : {total_users}\n\t(ADMIN : {no_of_admin}\tUSERS : {no_of_user})')
+
+def display_customer_list():
+    customers = getFileAsDic('customers.txt')
+    if len(customers) > 0:
+        print(f"{'CUSTOMER-ID':<15}{'NAME':<25}{'NIC No.':<20}ADDRESS")
+        print(f"{'+'*12:<15}{'+'*6:<25}{'+'*8:<20}{'+'*8}")
+        for key , value in customers.items():
+            print(f"{key:<15}{value['Name']:<25}{value['NIC']:<20}{value['Address']:<12}")
+    else: print('No customers registered yet.')
+    print(f'\n Total no of Customers Registered : {len(customers)}')
+
 #MENU FOR PROCESS AS ADMIN, if admin logged in successful.
 def admin_menu():
     print(f"{'=-'*63}\n\t\t\tWELCOME TO ABCD BANK as an ADMIN...!!!!\n{'=-'*63}")
     while True:
         print('\t1. Create a customer')
+        print('\t10. Display Existing Customer List')
         print('\t11. Delete Customer')
+        print('\t12. Display total no of users Registered')
         print('\t2. Deposit to an account')
         print("\t3. View a customer's details")
         print('\t4. Check transaction history of a account')
@@ -421,7 +451,7 @@ def admin_menu():
         print('\t0. Exit\n')
         try:
             choice=int(input('As a admin please chose a choice : '))
-            if choice in [1,2,3,4,5,6,7,8,9,11]:
+            if choice in [1,2,3,4,5,6,7,8,9,10,11,12]:
                 return choice
             elif choice ==0:
                 exit()
@@ -476,9 +506,12 @@ def main_menu():
                 while True:
                     select = admin_menu()
                     if select ==1:      create_customer()
+                    if select ==10:      display_customer_list()
                     if select ==11:
                         del_cus_id = input('Enter the Customer -ID for delete : ')
                         delete_customer(del_cus_id)
+                    
+                    elif select ==12:    display_total_users()
                     elif select ==2:    deposit(input("Enter Customer's ID or Account number for Deposit : "), "Deposit")
                     elif select ==3:    view_customer_details(input("Enter Customer's ID for Details : " ))
                     elif select ==4:    get_transaction_history_by_acc_no(get_acc_no_as_input())
@@ -522,7 +555,7 @@ def main_menu():
                     main_menu()
     else:
         print('\t⛔⛔⛔Access Denied...!\n\tUsername is not exists in our system...\n \tContact admin for register username and password!')
-        attempt -=1
+        attempt -= 1
         if attempt ==0:
             print("You exceeded maximum attempt of login try allowed...!")
             exit()
